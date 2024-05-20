@@ -218,6 +218,7 @@ attribute values, providing a clearer separation of concerns."
              (end (treesit-node-end comment)))
         (delete-region start end)
         (insert uncomment-text)
+        (indent-region start end)
         (goto-char start)))
      ((not (or is-normal-comment is-jsx-comment))
       (when-let* ((parent (treesit-parent-until node (lambda (n)
@@ -236,7 +237,8 @@ attribute values, providing a clearer separation of concerns."
                   (start (treesit-node-start parent))
                   (end (treesit-node-end parent)))
               (kill-region start end)
-              (insert comment-text))
+              (insert comment-text)
+              (indent-region start end))
           (comment-region start end)))))))
 
 
