@@ -157,11 +157,11 @@ attribute values, providing a clearer separation of concerns."
     (newline)
     (insert element-text)
     (indent-region end (point))
-    (let ((position (save-excursion
-                      (goto-char end)
-                      (skip-chars-forward " \t\n")
-                      (point))))
-      (pulse-momentary-highlight-region position (point)))))
+    (let ((highlight-start (save-excursion
+                             (goto-char end)
+                             (skip-chars-forward " \t\n")
+                             (point))))
+      (pulse-momentary-highlight-region highlight-start (point)))))
 
 (defun jsx/mark ()
   "Select the suitable syntax node at point."
