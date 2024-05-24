@@ -12,6 +12,8 @@ All functions are specific to the [tree-sitter-typescript](https://github.com/tr
 
   Kill the suitable syntax node at point.
 
+  The function intentionally skips JSX attribute nodes in `jsx_expression` format.
+
 - `jsx/empty`
 
   Empty the content of the JSX element or other suitable syntax node at point.
@@ -134,7 +136,6 @@ The `[a, b]` in `lexical_declaration`
 
 #### Actions:
 
-- `jsx/kill`
 - `jsx/empty`
 - `jsx/zap`
 
@@ -146,7 +147,6 @@ The `[a, b]` in `lexical_declaration`
 
 #### Actions:
 
-- `jsx/kill`
 - `jsx/empty`
 - `jsx/zap`
 
@@ -162,7 +162,6 @@ The `[a, b]` in `lexical_declaration`
 
 #### Actions:
 
-- `jsx/kill`
 - `jsx/mark`
 - `jsx/comment-uncomment`
 
@@ -220,6 +219,7 @@ import { X } from "x";
 
 - `jsx/kill`
 - `jsx/comment-uncomment`
+- `jsx/avy-word`
 
 ### `interface_declaration`
 
@@ -228,6 +228,12 @@ interface XXX {}
 ```
 
 #### Actions:
+
+- `jsx/kill`
+- `jsx/copy`
+- `jsx/mark`
+- `jsx/comment-uncomment`
+- `jsx/avy-word`
 
 ### `jsx_attribute`
 
@@ -239,6 +245,12 @@ The `attribute=XXX` in `jsx_opening_element` or `jsx_self_closing_element`
 
 #### Actions:
 
+- `jsx/kill-attribute`
+- `jsx/copy-attribute`
+- `jsx/kill-attribute-value`
+- `jsx/move-to-prev-attribute`
+- `jsx/move-to-next-attribute`
+
 ### `jsx_element`
 
 ```tsx
@@ -247,11 +259,39 @@ The `attribute=XXX` in `jsx_opening_element` or `jsx_self_closing_element`
 
 #### Actions:
 
+- `jsx/kill`
+- `jsx/empty`
+- `jsx/copy`
+- `jsx/duplicate`
+- `jsx/mark`
+- `jsx/comment-uncomment`
+- `jsx/avy-word`
+- `jsx/raise-element`
+- `jsx/move-to-opening-tag`
+- `jsx/move-to-closing-tag`
+
 ### `jsx_expression`
 
 All `{}` in jsx syntax
 
 #### Actions:
+
+- `jsx/kill`
+- `jsx/empty`
+- `jsx/zap`
+- `jsx/raise-element`
+
+### `jsx_opening_element`
+
+```tsx
+<tag></tag>
+```
+
+The opening `<tag>` in `jsx_element`
+
+#### Actions:
+
+- `jsx/zap`
 
 ### `jsx_self_closing_element`
 
@@ -260,6 +300,15 @@ All `{}` in jsx syntax
 ```
 
 #### Actions:
+
+- `jsx/kill`
+- `jsx/zap`
+- `jsx/copy`
+- `jsx/duplicate`
+- `jsx/mark`
+- `jsx/comment-uncomment`
+- `jsx/avy-word`
+- `jsx/raise-element`
 
 ### `lexical_declaration`
 
@@ -271,6 +320,14 @@ const c = 1;
 
 #### Actions:
 
+- `jsx/kill`
+- `jsx/copy`
+- `jsx/duplicate`
+- `jsx/mark`
+- `jsx/comment-uncomment`
+- `jsx/avy-word`
+- `jsx/declaration-to-if-statement`
+
 ### `named_imports`
 
 ```tsx
@@ -280,6 +337,9 @@ import { X } from "x";
 The `{}` in `import_statement`
 
 #### Actions:
+
+- `jsx/empty`
+- `jsx/zap`
 
 ### `object_pattern`
 
@@ -291,6 +351,9 @@ The `{ a, b }` in `lexical_declaration`
 
 #### Actions:
 
+- `jsx/empty`
+- `jsx/zap`
+
 ### `pair`
 
 `property: value` in Object
@@ -298,6 +361,9 @@ The `{ a, b }` in `lexical_declaration`
 #### Actions:
 
 - `jsx/kill`
+- `jsx/copy`
+- `jsx/duplicate`
+- `jsx/mark`
 - `jsx/comment-uncomment`
 
 ### `statement_block`
@@ -312,6 +378,7 @@ The `{}` in `function_declaration` or `if_statement`
 #### Actions:
 
 - `jsx/empty`
+- `jsx/mark`
 - `jsx/avy-word`
 
 ### `string`
@@ -323,8 +390,8 @@ The `{}` in `function_declaration` or `if_statement`
 
 #### Actions:
 
-- `jsx/kill`
 - `jsx/empty`
+- `jsx/zap`
 - `jsx/copy`
 - `jsx/avy-word`
 
@@ -336,8 +403,8 @@ The `{}` in `function_declaration` or `if_statement`
 
 #### Actions:
 
-- `jsx/kill`
 - `jsx/empty`
+- `jsx/zap`
 - `jsx/copy`
 - `jsx/avy-word`
 
@@ -349,6 +416,6 @@ type Type = {};
 
 - `jsx/kill`
 - `jsx/copy`
-- `jsx/duplicate`
 - `jsx/mark`
+- `jsx/comment-uncomment`
 - `jsx/avy-word`

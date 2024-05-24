@@ -54,19 +54,20 @@ Return a cons cell (START . END) representing the bounds."
 (defun jsx/kill ()
   "Kill the suitable syntax node at point."
   (interactive)
-  (let* ((node (treesit-node-at (point)))
-         (parent (treesit-parent-until node (lambda (n)
-                                              (member (treesit-node-type n)
-                                                      '("import_statement"
-                                                        "expression_statement"
-                                                        "function_declaration"
-                                                        "lexical_declaration"
-                                                        "type_alias_declaration"
-                                                        "jsx_element"
-                                                        "jsx_self_closing_element"
-                                                        "pair")))))
-         (start (treesit-node-start parent))
-         (end (treesit-node-end parent)))
+  (when-let* ((node (treesit-node-at (point)))
+              (parent (treesit-parent-until node (lambda (n)
+                                                   (member (treesit-node-type n)
+                                                           '("expression_statement"
+                                                             "function_declaration"
+                                                             "import_statement"
+                                                             "interface_declaration"
+                                                             "jsx_element"
+                                                             "jsx_self_closing_element"
+                                                             "lexical_declaration"
+                                                             "pair"
+                                                             "type_alias_declaration")))))
+              (start (treesit-node-start parent))
+              (end (treesit-node-end parent)))
     (kill-region start end)
     (delete-blank-lines)
     (indent-for-tab-command)))
@@ -86,14 +87,17 @@ attribute values, providing a clearer separation of concerns."
                                                           (not (treesit-parent-until n (lambda (m)
                                                                                          (string= (treesit-node-type m) "jsx_attribute"))))
                                                         (member node-type
-                                                                '("jsx_element"
+                                                                '("arguments"
                                                                   "array"
                                                                   "array_pattern"
-                                                                  "arguments"
+                                                                  "formal_parameters"
+                                                                  "jsx_element"
+                                                                  "jsx_expression"
                                                                   "named_imports"
                                                                   "object_pattern"
-                                                                  "formal_parameters"
-                                                                  "statement_block")))))))
+                                                                  "statement_block"
+                                                                  "string"
+                                                                  "template_string")))))))
               (opening-node (treesit-node-child element 0))
               (closing-node (treesit-node-child element -1))
               (start (treesit-node-end opening-node))
@@ -107,15 +111,17 @@ attribute values, providing a clearer separation of concerns."
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
                                                    (member (treesit-node-type n)
-                                                           '("array"
+                                                           '("arguments"
+                                                             "array"
                                                              "array_pattern"
-                                                             "string"
-                                                             "arguments"
-                                                             "named_imports"
-                                                             "object_pattern"
                                                              "formal_parameters"
                                                              "jsx_expression"
-                                                             "jsx_opening_element")))))
+                                                             "jsx_opening_element"
+                                                             "jsx_self_closing_element"
+                                                             "named_imports"
+                                                             "object_pattern"
+                                                             "string"
+                                                             "template_string")))))
               (end (1- (treesit-node-end parent))))
     (delete-region (point) end)))
 
@@ -126,14 +132,16 @@ attribute values, providing a clearer separation of concerns."
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
                                                    (member (treesit-node-type n)
-                                                           '("import_statement"
-                                                             "expression_statement"
+                                                           '("expression_statement"
                                                              "function_declaration"
-                                                             "lexical_declaration"
-                                                             "type_alias_declaration"
+                                                             "interface_declaration"
                                                              "jsx_element"
                                                              "jsx_self_closing_element"
-                                                             "pair")))))
+                                                             "lexical_declaration"
+                                                             "pair"
+                                                             "string"
+                                                             "template_string"
+                                                             "type_alias_declaration")))))
               (start (treesit-node-start parent))
               (end (treesit-node-end parent)))
     (kill-ring-save start end)
@@ -147,9 +155,9 @@ attribute values, providing a clearer separation of concerns."
               (element (treesit-parent-until node (lambda (n)
                                                     (member (treesit-node-type n)
                                                             '("function_declaration"
-                                                              "lexical_declaration"
                                                               "jsx_element"
                                                               "jsx_self_closing_element"
+                                                              "lexical_declaration"
                                                               "pair")))))
               (element-text (treesit-node-text element t))
               (end (treesit-node-end element)))
@@ -176,14 +184,15 @@ attribute values, providing a clearer separation of concerns."
           (activate-mark))
       (when-let* ((parent (treesit-parent-until node (lambda (n)
                                                        (member (treesit-node-type n)
-                                                               '("import_statement"
-                                                                 "expression_statement"
+                                                               '("expression_statement"
                                                                  "function_declaration"
-                                                                 "lexical_declaration"
-                                                                 "type_alias_declaration"
+                                                                 "interface_declaration"
                                                                  "jsx_element"
                                                                  "jsx_self_closing_element"
-                                                                 "pair")))))
+                                                                 "lexical_declaration"
+                                                                 "pair"
+                                                                 "statement_block"
+                                                                 "type_alias_declaration")))))
                   (start (treesit-node-start parent))
                   (end (treesit-node-end parent)))
         (goto-char start)
@@ -223,13 +232,15 @@ attribute values, providing a clearer separation of concerns."
      ((not (or is-normal-comment is-jsx-comment))
       (when-let* ((parent (treesit-parent-until node (lambda (n)
                                                        (member (treesit-node-type n)
-                                                               '("import_statement"
-                                                                 "expression_statement"
+                                                               '("expression_statement"
                                                                  "function_declaration"
-                                                                 "lexical_declaration"
-                                                                 "type_alias_declaration"
+                                                                 "import_statement"
+                                                                 "interface_declaration"
                                                                  "jsx_element"
-                                                                 "jsx_self_closing_element")))))
+                                                                 "jsx_self_closing_element"
+                                                                 "lexical_declaration"
+                                                                 "pair"
+                                                                 "type_alias_declaration")))))
                   (start (treesit-node-start parent))
                   (end (treesit-node-end parent)))
         (if (member (treesit-node-type parent) '("jsx_element" "jsx_self_closing_element"))
@@ -248,13 +259,17 @@ attribute values, providing a clearer separation of concerns."
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
                                                    (member (treesit-node-type n)
-                                                           '("import_statement"
-                                                             "expression_statement"
+                                                           '("expression_statement"
                                                              "function_declaration"
-                                                             "lexical_declaration"
-                                                             "type_alias_declaration"
+                                                             "import_statement"
+                                                             "interface_declaration"
                                                              "jsx_element"
-                                                             "jsx_self_closing_element")))))
+                                                             "jsx_self_closing_element"
+                                                             "lexical_declaration"
+                                                             "statement_block"
+                                                             "string"
+                                                             "template_string"
+                                                             "type_alias_declaration")))))
               (start (treesit-node-start parent))
               (end (treesit-node-end parent)))
     (avy-goto-word-0 t start end)))
@@ -267,8 +282,8 @@ attribute values, providing a clearer separation of concerns."
               (element (treesit-parent-until node (lambda (n)
                                                     (member (treesit-node-type n)
                                                             '("jsx_element"
-                                                              "jsx_self_closing_element"
-                                                              "jsx_expression")))))
+                                                              "jsx_expression"
+                                                              "jsx_self_closing_element")))))
               (element-text (treesit-node-text element t))
               (element-parent (treesit-parent-until element (lambda (n)
                                                               (string= (treesit-node-type n) "jsx_element"))))
