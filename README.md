@@ -355,6 +355,17 @@ The `{ a, b }` in `lexical_declaration`
 - `jsx/empty`
 - `jsx/zap`
 
+### `object`
+
+```tsx
+{}
+```
+
+#### Actions:
+
+- `jsx/kill`
+- `jsx/empty`
+
 ### `pair`
 
 `property: value` in Object
