@@ -162,6 +162,7 @@ The `[a, b]` in `lexical_declaration`
 
 #### Actions:
 
+- `jsx/kill`
 - `jsx/mark`
 - `jsx/comment-uncomment`
 

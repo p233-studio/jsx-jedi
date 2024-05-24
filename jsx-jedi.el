@@ -55,22 +55,35 @@ Return a cons cell (START . END) representing the bounds."
   "Kill the suitable syntax node at point."
   (interactive)
   (when-let* ((node (treesit-node-at (point)))
-              (parent (treesit-parent-until node (lambda (n)
-                                                   (member (treesit-node-type n)
-                                                           '("expression_statement"
-                                                             "function_declaration"
-                                                             "import_statement"
-                                                             "interface_declaration"
-                                                             "jsx_element"
-                                                             "jsx_self_closing_element"
-                                                             "lexical_declaration"
-                                                             "pair"
-                                                             "type_alias_declaration")))))
-              (start (treesit-node-start parent))
-              (end (treesit-node-end parent)))
-    (kill-region start end)
-    (delete-blank-lines)
-    (indent-for-tab-command)))
+              (bounds (if (string= (treesit-node-type node) "comment")
+                          (jsx/find-comment-block-bounds node)
+                        (when-let ((parent (treesit-parent-until node (lambda (n)
+                                                                        (let ((node-type (treesit-node-type n)))
+                                                                          (if (string= node-type "jsx_expression")
+                                                                              (not (treesit-parent-until n (lambda (m)
+                                                                                                             (string= (treesit-node-type m) "jsx_attribute"))))
+                                                                            (member node-type
+                                                                                    '("expression_statement"
+                                                                                      "function_declaration"
+                                                                                      "import_statement"
+                                                                                      "interface_declaration"
+                                                                                      "jsx_element"
+                                                                                      "jsx_expression"
+                                                                                      "jsx_self_closing_element"
+                                                                                      "lexical_declaration"
+                                                                                      "pair"
+                                                                                      "type_alias_declaration"))))))))
+                          (let ((kill-comma (and (member (treesit-node-type parent) '("object" "pair"))
+                                                 (string= (treesit-node-text (treesit-node-next-sibling parent) t) ","))))
+                            (cons (treesit-node-start parent) (if kill-comma
+                                                               (1+ (treesit-node-end parent))
+                                                             (treesit-node-end parent))))))))
+    (kill-region (car bounds) (cdr bounds))
+    (when (save-excursion
+            (beginning-of-line)
+            (looking-at-p "^[[:space:]]*$"))
+      (delete-blank-lines)
+      (indent-for-tab-command))))
 
 
 (defun jsx/empty ()
