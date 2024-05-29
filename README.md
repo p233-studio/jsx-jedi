@@ -4,6 +4,13 @@ Working in progress.
 
 ## Installation
 
+```elisp
+(use-package avy)
+
+(use-package jsx-jedi
+  :straight (:type git :host github :repo "p233/jsx-jedi"))
+```
+
 ## Functions
 
 All functions are specific to the [tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) parser and only work in the Emacs 29 built-in `tsx-ts-mode` and `typescript-ts-mode`.
