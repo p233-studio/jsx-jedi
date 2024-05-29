@@ -378,6 +378,18 @@ The `{ a, b }` in `lexical_declaration`
 - `jsx/mark`
 - `jsx/comment-uncomment`
 
+### `return_statement`
+
+```tsx
+return ...;
+```
+
+#### Actions:
+
+- `jsx/kill`
+- `jsx/mark`
+- `jsx/avy-word`
+
 ### `statement_block`
 
 ```tsx

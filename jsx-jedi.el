@@ -73,6 +73,7 @@ Return a cons cell (START . END) representing the bounds."
                                                                                       "lexical_declaration"
                                                                                       "object"
                                                                                       "pair"
+                                                                                      "return_statement"
                                                                                       "type_alias_declaration"))))))))
                           (let ((kill-comma (and (member (treesit-node-type parent) '("object" "pair"))
                                                  (string= (treesit-node-text (treesit-node-next-sibling parent) t) ","))))
@@ -206,6 +207,7 @@ attribute values, providing a clearer separation of concerns."
                                                                  "jsx_self_closing_element"
                                                                  "lexical_declaration"
                                                                  "pair"
+                                                                 "return_statement"
                                                                  "statement_block"
                                                                  "type_alias_declaration")))))
                   (start (treesit-node-start parent))
@@ -281,6 +283,7 @@ attribute values, providing a clearer separation of concerns."
                                                              "jsx_element"
                                                              "jsx_self_closing_element"
                                                              "lexical_declaration"
+                                                             "return_statement"
                                                              "statement_block"
                                                              "string"
                                                              "template_string"
