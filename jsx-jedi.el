@@ -33,6 +33,96 @@
 
 (require 'avy)
 
+(defvar jsx-jedi-kill-node-list '("expression_statement"
+                                  "function_declaration"
+                                  "import_statement"
+                                  "interface_declaration"
+                                  "jsx_element"
+                                  "jsx_expression"
+                                  "jsx_self_closing_element"
+                                  "lexical_declaration"
+                                  "object"
+                                  "pair"
+                                  "return_statement"
+                                  "type_alias_declaration"))
+
+(defvar jsx-jedi-empty-node-list '("arguments"
+                                   "array"
+                                   "array_pattern"
+                                   "formal_parameters"
+                                   "jsx_element"
+                                   "jsx_expression"
+                                   "named_imports"
+                                   "object"
+                                   "object_pattern"
+                                   "statement_block"
+                                   "string"
+                                   "template_string"))
+
+(defvar jsx-jedi-zap-node-list '("arguments"
+                                 "array"
+                                 "array_pattern"
+                                 "formal_parameters"
+                                 "jsx_expression"
+                                 "jsx_opening_element"
+                                 "jsx_self_closing_element"
+                                 "named_imports"
+                                 "object_pattern"
+                                 "string"
+                                 "template_string"))
+
+(defvar jsx-jedi-copy-node-list '("expression_statement"
+                                  "function_declaration"
+                                  "interface_declaration"
+                                  "jsx_element"
+                                  "jsx_self_closing_element"
+                                  "lexical_declaration"
+                                  "pair"
+                                  "string"
+                                  "template_string"
+                                  "type_alias_declaration"))
+
+(defvar jsx-jedi-duplicate-node-list '("function_declaration"
+                                       "jsx_element"
+                                       "jsx_self_closing_element"
+                                       "lexical_declaration"
+                                       "pair"))
+
+(defvar jsx-jedi-mark-node-list '("expression_statement"
+                                  "function_declaration"
+                                  "interface_declaration"
+                                  "jsx_element"
+                                  "jsx_self_closing_element"
+                                  "lexical_declaration"
+                                  "pair"
+                                  "return_statement"
+                                  "statement_block"
+                                  "type_alias_declaration"))
+
+(defvar jsx-jedi-comment-node-list '("expression_statement"
+                                     "import_statement"
+                                     "interface_declaration"
+                                     "jsx_element"
+                                     "jsx_self_closing_element"
+                                     "lexical_declaration"
+                                     "pair"
+                                     "return_statement"
+                                     "function_declaration"
+                                     "type_alias_declaration"))
+
+(defvar jsx-jedi-avy-node-list '("expression_statement"
+                                 "function_declaration"
+                                 "import_statement"
+                                 "interface_declaration"
+                                 "jsx_element"
+                                 "jsx_self_closing_element"
+                                 "lexical_declaration"
+                                 "return_statement"
+                                 "statement_block"
+                                 "string"
+                                 "template_string"
+                                 "type_alias_declaration"))
+
 (defun jsx/kill-region-and-goto-start (start end)
   "Kill the region between START and END, and move point to START."
   (kill-region start end)
@@ -50,6 +140,17 @@ Return a cons cell (START . END) representing the bounds."
       (setq end-node (treesit-node-next-sibling end-node)))
     (cons (treesit-node-start start-node) (treesit-node-end end-node))))
 
+(defun jsx/detect-correct-node ()
+  "Detect the correct node at point."
+  (let* ((node (treesit-node-at (point)))
+         (start (treesit-node-start node))
+         (end (treesit-node-end node))
+         (position (point)))
+    (message "Node: %s" (treesit-node-type node))
+    (if (or (< position start) (> position end))
+        (treesit-node-parent node)
+      node)))
+
 
 (defun jsx/kill ()
   "Kill the suitable syntax node at point."
@@ -62,24 +163,12 @@ Return a cons cell (START . END) representing the bounds."
                                                                           (if (string= node-type "jsx_expression")
                                                                               (not (treesit-parent-until n (lambda (m)
                                                                                                              (string= (treesit-node-type m) "jsx_attribute"))))
-                                                                            (member node-type
-                                                                                    '("expression_statement"
-                                                                                      "function_declaration"
-                                                                                      "import_statement"
-                                                                                      "interface_declaration"
-                                                                                      "jsx_element"
-                                                                                      "jsx_expression"
-                                                                                      "jsx_self_closing_element"
-                                                                                      "lexical_declaration"
-                                                                                      "object"
-                                                                                      "pair"
-                                                                                      "return_statement"
-                                                                                      "type_alias_declaration"))))))))
+                                                                            (member node-type jsx-jedi-kill-node-list)))))))
                           (let ((kill-comma (and (member (treesit-node-type parent) '("object" "pair"))
                                                  (string= (treesit-node-text (treesit-node-next-sibling parent) t) ","))))
                             (cons (treesit-node-start parent) (if kill-comma
-                                                               (1+ (treesit-node-end parent))
-                                                             (treesit-node-end parent))))))))
+                                                                  (1+ (treesit-node-end parent))
+                                                                (treesit-node-end parent))))))))
     (kill-region (car bounds) (cdr bounds))
     (when (save-excursion
             (beginning-of-line)
@@ -101,19 +190,7 @@ attribute values, providing a clearer separation of concerns."
                                                       (if (string= node-type "jsx_expression")
                                                           (not (treesit-parent-until n (lambda (m)
                                                                                          (string= (treesit-node-type m) "jsx_attribute"))))
-                                                        (member node-type
-                                                                '("arguments"
-                                                                  "array"
-                                                                  "array_pattern"
-                                                                  "formal_parameters"
-                                                                  "jsx_element"
-                                                                  "jsx_expression"
-                                                                  "named_imports"
-                                                                  "object"
-                                                                  "object_pattern"
-                                                                  "statement_block"
-                                                                  "string"
-                                                                  "template_string")))))))
+                                                        (member node-type jsx-jedi-empty-node-list))))))
               (opening-node (treesit-node-child element 0))
               (closing-node (treesit-node-child element -1))
               (start (treesit-node-end opening-node))
@@ -126,18 +203,7 @@ attribute values, providing a clearer separation of concerns."
   (interactive)
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
-                                                   (member (treesit-node-type n)
-                                                           '("arguments"
-                                                             "array"
-                                                             "array_pattern"
-                                                             "formal_parameters"
-                                                             "jsx_expression"
-                                                             "jsx_opening_element"
-                                                             "jsx_self_closing_element"
-                                                             "named_imports"
-                                                             "object_pattern"
-                                                             "string"
-                                                             "template_string")))))
+                                                   (member (treesit-node-type n) jsx-jedi-zap-node-list))))
               (end (1- (treesit-node-end parent))))
     (delete-region (point) end)))
 
@@ -147,17 +213,7 @@ attribute values, providing a clearer separation of concerns."
   (interactive)
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
-                                                   (member (treesit-node-type n)
-                                                           '("expression_statement"
-                                                             "function_declaration"
-                                                             "interface_declaration"
-                                                             "jsx_element"
-                                                             "jsx_self_closing_element"
-                                                             "lexical_declaration"
-                                                             "pair"
-                                                             "string"
-                                                             "template_string"
-                                                             "type_alias_declaration")))))
+                                                   (member (treesit-node-type n) jsx-jedi-copy-node-list))))
               (start (treesit-node-start parent))
               (end (treesit-node-end parent)))
     (kill-ring-save start end)
@@ -169,12 +225,7 @@ attribute values, providing a clearer separation of concerns."
   (interactive)
   (when-let* ((node (treesit-node-at (point)))
               (element (treesit-parent-until node (lambda (n)
-                                                    (member (treesit-node-type n)
-                                                            '("function_declaration"
-                                                              "jsx_element"
-                                                              "jsx_self_closing_element"
-                                                              "lexical_declaration"
-                                                              "pair")))))
+                                                    (member (treesit-node-type n) jsx-jedi-duplicate-node-list))))
               (element-text (treesit-node-text element t))
               (end (treesit-node-end element)))
     (goto-char end)
@@ -199,17 +250,7 @@ attribute values, providing a clearer separation of concerns."
           (set-mark end)
           (activate-mark))
       (when-let* ((parent (treesit-parent-until node (lambda (n)
-                                                       (member (treesit-node-type n)
-                                                               '("expression_statement"
-                                                                 "function_declaration"
-                                                                 "interface_declaration"
-                                                                 "jsx_element"
-                                                                 "jsx_self_closing_element"
-                                                                 "lexical_declaration"
-                                                                 "pair"
-                                                                 "return_statement"
-                                                                 "statement_block"
-                                                                 "type_alias_declaration")))))
+                                                       (member (treesit-node-type n) jsx-jedi-mark-node-list))))
                   (start (treesit-node-start parent))
                   (end (treesit-node-end parent)))
         (goto-char start)
@@ -248,16 +289,7 @@ attribute values, providing a clearer separation of concerns."
         (goto-char start)))
      ((not (or is-normal-comment is-jsx-comment))
       (when-let* ((parent (treesit-parent-until node (lambda (n)
-                                                       (member (treesit-node-type n)
-                                                               '("expression_statement"
-                                                                 "function_declaration"
-                                                                 "import_statement"
-                                                                 "interface_declaration"
-                                                                 "jsx_element"
-                                                                 "jsx_self_closing_element"
-                                                                 "lexical_declaration"
-                                                                 "pair"
-                                                                 "type_alias_declaration")))))
+                                                       (member (treesit-node-type n) jsx-jedi-comment-node-list))))
                   (start (treesit-node-start parent))
                   (end (treesit-node-end parent)))
         (if (member (treesit-node-type parent) '("jsx_element" "jsx_self_closing_element"))
@@ -275,19 +307,7 @@ attribute values, providing a clearer separation of concerns."
   (interactive)
   (when-let* ((node (treesit-node-at (point)))
               (parent (treesit-parent-until node (lambda (n)
-                                                   (member (treesit-node-type n)
-                                                           '("expression_statement"
-                                                             "function_declaration"
-                                                             "import_statement"
-                                                             "interface_declaration"
-                                                             "jsx_element"
-                                                             "jsx_self_closing_element"
-                                                             "lexical_declaration"
-                                                             "return_statement"
-                                                             "statement_block"
-                                                             "string"
-                                                             "template_string"
-                                                             "type_alias_declaration")))))
+                                                   (member (treesit-node-type n) jsx-jedi-avy-node-list))))
               (start (treesit-node-start parent))
               (end (treesit-node-end parent)))
     (avy-goto-word-0 t start end)))
@@ -439,6 +459,9 @@ tsx-ts-mode and typescript-ts-mode."
             (define-key map (kbd "C-c C-a C-n") 'jsx/move-to-next-attribute)
             map))
 
+
+;;;###autoload
+(add-hook 'js-ts-mode-hook #'jsx-jedi-mode)
 
 ;;;###autoload
 (add-hook 'tsx-ts-mode-hook #'jsx-jedi-mode)
