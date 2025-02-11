@@ -1,9 +1,11 @@
-;;; jsx-jedi.el --- Minor mode for JSX-related editing commands.  -*- lexical-binding: t; -*-
+;;; jsx-jedi.el --- Enlightened JS/TS/JSX editing powers  -*- lexical-binding: t; -*-
 
-;; Copyright (C) 2024 Peiwen Lu
+;; Copyright (C) 2024-2025 Peiwen Lu
 
 ;; Author: Peiwen Lu <hi@peiwen.lu>
+;; Version: 0.0.1
 ;; Created: 20 May 2024
+;; Keywords: languages convenience tools tree-sitter javascript typescript jsx react
 ;; URL: https://github.com/p233-studio/jsx-jedi
 ;; Compatibility: emacs-version >= 29.1
 ;; Package-Requires: ((emacs "29.1") (avy "0.5"))
@@ -27,7 +29,11 @@
 
 ;;; Commentary:
 
-;; Please check the README.
+;; JSX-Jedi brings enlightened editing powers to your JavaScript, TypeScript
+;; and JSX development experience in Emacs.
+
+;; For detailed documentation and usage instructions, visit:
+;; https://github.com/p233-studio/jsx-jedi#readme
 
 ;;; Code:
 
