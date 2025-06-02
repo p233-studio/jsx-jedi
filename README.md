@@ -1,6 +1,10 @@
 # jsx-jedi-mode
 
-This project is working in progress.
+**Working in progress.**
+
+JSX Jedi streamlines editing by providing context-aware operations for JavaScript, TypeScript, and JSX/TSX code. Leveraging tree-sitter's precise syntax analysis, it intelligently identifies relevant code structures based on cursor position—eliminating the need for exact cursor placement or manual selection of complete statements.
+
+Note: JSX Jedi is specifically designed for the [tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) parser and only works with the built-in `js-ts-mode`, `typescript-ts-mode`, and `tsx-ts-mode` in Emacs 29 and later versions.
 
 ## Installation
 
@@ -11,290 +15,66 @@ This project is working in progress.
   :straight (:type git :host github :repo "p233-studio/jsx-jedi"))
 ```
 
+## How it works
+
+### Smart Node Selection
+
+When you execute a command like `jsx-jedi-kill` or `jsx-jedi-empty`, JSX Jedi:
+
+1. Examines your current cursor position
+2. Identifies the syntax node at that position
+3. Traverses up the tree-sitter syntax tree, searching for a matching node type from a predefined list (e.g., `jsx-jedi-kill-node-types`)
+4. Applies the requested operation to the most appropriate node
+
+This intelligent selection means you can place your cursor *anywhere* within a structure, whether inside a JSX element, attribute, expression, or tag name, and JSX Jedi will act on the most logical enclosing Node. No more precise cursor positioning or manual selection required. Simply place the cursor somewhere in or near the target and execute the command, JSX Jedi handles the rest.
+
+### Operation-Specific Node Types
+
+Each operation in JSX Jedi has its own list of node types that it considers valid targets:
+
+```elisp
+(defvar jsx-jedi-kill-node-types '("comment"
+                                   "expression_statement"
+                                   "function_declaration"
+                                   "import_statement"
+                                   "interface_declaration"
+                                   "jsx_attribute"
+                                   "jsx_element"
+                                   "jsx_expression"
+                                   "jsx_self_closing_element"
+                                   "lexical_declaration"
+                                   "object"
+                                   "pair"
+                                   "return_statement"
+                                   "type_alias_declaration")
+    "Nodes that can be killed by jsx-jedi-kill.")
+```
+
+These node type lists serve as *action filters* that determine which syntax elements each command can operate on. You can customize these lists to adapt JSX Jedi's behavior to your specific workflow and preferences, adding or removing node types to make commands more selective or more inclusive.
+
 ## Functions
 
-All functions are specific to the [tree-sitter-typescript](https://github.com/tree-sitter/tree-sitter-typescript) parser and only work in the Emacs 29 built-in `tsx-ts-mode` and `typescript-ts-mode`.
+TODO
 
-### `jsx/kill`
+## Key Bindings
 
-Kill the appropriate syntax node at the current point. This function works with the following tree-sitter node types:
+JSX Jedi provides an empty `jsx-jedi-mode-map` keymap, allowing you to create custom keybindings tailored to your workflow. Here's an example to get you started:
 
-- `expression_statement`
-- `function_declaration`
-- `import_statement`
-- `interface_declaration`
-- `jsx_element`
-- `jsx_expression`
-- `jsx_self_closing_element`
-- `lexical_declaration`
-- `object`
-- `pair`
-- `return_statement`
-- `type_alias_declaration`
-
-_Note: This function intentionally skips `jsx_attribute` nodes in the `jsx_expression` format._
-
-### `jsx/empty`
-
-Empty the content of the JSX element or other suitable syntax node at point.
-
-_This function intentionally skips JSX attribute nodes, as the `jsx/kill-attribute-value` function is specifically designed for emptying attribute values, providing a clearer separation of concerns._
-
-### `jsx/zap`
-
-Zap the suitable syntax node at point to the end.
-
-### `jsx/copy`
-
-Copy the suitable syntax node at point to the kill ring.
-
-### `jsx/duplicate`
-
-Duplicate the suitable syntax node at point.
-
-### `jsx/mark`
-
-Select the suitable syntax node at point.
-
-### `jsx/comment-uncomment`
-
-Comment or uncomment the suitable syntax node at point.
-
-### `jsx/avy-word`
-
-Jump to a word within the nearest suitable parent node at point using Avy.
-
-### `jsx/raise-element`
-
-Raise the JSX element at point.
-
-### `jsx/move-to-opening-tag`
-
-Move point to the opening tag of the JSX element at point.
-
-### `jsx/move-to-closing-tag`
-
-Move point to the closing tag of the JSX element at point.
-
-### `jsx/kill-attribute`
-
-Kill the JSX attribute at point.
-
-### `jsx/copy-attribute`
-
-Copy the JSX attribute at point to the kill ring.
-
-### `jsx/kill-attribute-value`
-
-Kill the value of the JSX attribute at point.
- 
-### `jsx/move-to-preview-attribute`
-
-Move point to the previous JSX attribute.
-
-### `jsx/move-to-next-attribute`
-
-Move point to the next JSX attribute.
-
-### `jsx/declaration-to-if-statement`
-
-Convert the variable declaration at point to an if statement.
-
-## Key bindings
-
-General:
-
-- `C-c C-k`: `jsx/kill`
-- `C-c C-e`: `jsx/empty`
-- `C-c C-z`: `jsx/zap`
-- `C-c C-w`: `jsx/copy`
-- `C-c C-x`: `jsx/duplicate`
-- `C-c C-SPC`: `jsx/mark`
-- `C-c C-;`: `jsx/comment-uncomment`
-- `C-c C-j`: `jsx/avy-word`
-
-Tag manipulation:
-
-- `C-c C-t C-r`: `jsx/raise-element`
-- `C-c C-t C-,`: `jsx/move-to-opening-tag`
-- `C-c C-t C-.`: `jsx/move-to-closing-tag`
-
-Attribute manipulation:
-
-- `C-c C-a C-k`: `jsx/kill-attribute`
-- `C-c C-a C-w`: `jsx/copy-attribute`
-- `C-c C-a C-v`: `jsx/kill-attribute-value`
-- `C-c C-a C-p`: `jsx/move-to-prev-attribute`
-- `C-c C-a C-n`: `jsx/move-to-next-attribute`
-
-Note: There is no default key binding for function `jsx/declaration-to-if-statement`. You can bind it to a key of your choice using `define-key` or `global-set-key`.
-
-You can customize these keybindings by modifying the `jsx-jedi-mode-map` variable or by using `define-key` in your Emacs configuration.
-
-## Tree-sitter nodes and actions
-
-### `arguments`
-
-```tsx
-func(arguments)
+``` elisp
+(use-package jsx-jedi
+  :straight (:type git :host github :repo "p233-studio/jsx-jedi")
+  :bind (:map jsx-jedi-mode-map
+              ("C-c C-k"     . jsx-jedi-kill)
+              ("C-c C-e"     . jsx-jedi-empty)
+              ("C-c C-z"     . jsx-jedi-zap)
+              ("C-c C-w"     . jsx-jedi-copy)
+              ("C-c C-x"     . jsx-jedi-duplicate)
+              ("C-c C-SPC"   . jsx-jedi-mark)
+              ("C-c C-;"     . jsx-jedi-comment-uncomment)
+              ("C-c C-j"     . jsx-jedi-avy-word)
+              ("C-c C-t C-r" . jsx-jedi-raise)
+              ("C-c C-t C-w" . jsx-jedi-wrap-tag)
+              ("C-c C-t C-," . jsx-jedi-move-to-opening-tag)
+              ("C-c C-t C-." . jsx-jedi-move-to-closing-tag)))
 ```
 
-The `(arguments)` in `call_expression`
-
-### `array_pattern`
-
-```tsx
-const [a, b] = func();
-```
-
-The `[a, b]` in `lexical_declaration`
-
-### `array`
-
-```tsx
-[1, 2, 3]
-```
-
-### `comment`
-
-```tsx
-// inline comment
-/* block comment */
-{
-  /* block comment */
-}
-```
-
-### `expression_statement`
-
-```tsx
-func();
-obj.mothod();
-```
-
-### `formal_parameters`
-
-```tsx
-function func(parameters) {}
-```
-
-The `(parameters)` in `function_declaration`
-
-### `function_declaration`
-
-```tsx
-function func() {}
-```
-
-### `import_statement`
-
-```tsx
-import X from "x";
-import { X } from "x";
-```
-
-### `interface_declaration`
-
-```tsx
-interface XXX {}
-```
-
-### `jsx_attribute`
-
-```tsx
-<tag attribute=XXX></tag>
-```
-
-The `attribute=XXX` in `jsx_opening_element` or `jsx_self_closing_element`
-
-### `jsx_element`
-
-```tsx
-<tag></tag>
-```
-
-### `jsx_expression`
-
-All `{}` in jsx syntax
-
-### `jsx_opening_element`
-
-```tsx
-<tag></tag>
-```
-
-The opening `<tag>` in `jsx_element`
-
-### `jsx_self_closing_element`
-
-```tsx
-<tag />
-```
-
-### `lexical_declaration`
-
-```tsx
-var a = 1;
-let b = 1;
-const c = 1;
-```
-
-### `named_imports`
-
-```tsx
-import { X } from "x";
-```
-
-The `{}` in `import_statement`
-
-### `object_pattern`
-
-```tsx
-const { a, b } = func();
-```
-
-The `{ a, b }` in `lexical_declaration`
-
-### `object`
-
-```tsx
-{}
-```
-
-### `pair`
-
-`property: value` in Object
-
-### `return_statement`
-
-```tsx
-return ...;
-```
-
-### `statement_block`
-
-```tsx
-function func() {}
-if {} else {}
-```
-
-The `{}` in `function_declaration` or `if_statement`
-
-### `string`
-
-```tsx
-'...'
-"..."
-```
-
-### `template_string`
-
-```tsx
-`...`
-```
-
-### `type_alias_declaration`
-
-```tsx
-type Type = {};
-```
